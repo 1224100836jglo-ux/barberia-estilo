@@ -7,27 +7,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style type="text/tailwindcss">
         @layer components {
-            .etiqueta { @apply block text-sm text-amber-100; }
-            .campo { @apply mt-1 w-full rounded-lg border border-amber-900/60 bg-stone-800 p-2 text-white placeholder-stone-500 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600; }
-            .btn { @apply rounded-lg bg-amber-700 px-5 py-2 font-semibold text-amber-50 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500; }
-            .btn-sec { @apply rounded-lg border border-amber-900/60 px-3 py-1 text-sm text-amber-200 hover:bg-stone-800; }
-            .tarjeta { @apply relative rounded-xl border border-amber-900/50 bg-stone-900 p-6 shadow-lg shadow-amber-950/40; }
+            .etiqueta { @apply block text-sm text-slate-300; }
+            .campo { @apply mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 p-2 text-white placeholder-slate-500 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600; }
+            .btn { @apply rounded-lg bg-red-800 px-5 py-2 font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500; }
+            .btn-sec { @apply rounded-lg border border-slate-700 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800; }
+            .tarjeta { @apply relative rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-lg shadow-black/40; }
         }
     </style>
 </head>
-<body class="bg-stone-950 text-stone-100">
+<body class="bg-slate-950 text-slate-100">
     <main class="mx-auto flex min-h-screen max-w-md flex-col justify-center space-y-6 p-4 py-8">
         <header class="text-center">
-            <span class="text-3xl font-semibold text-amber-600">Barbería Estilo</span>
-            <p class="mt-2 text-sm text-stone-400">Reserva tu cita en línea</p>
+            <span class="text-3xl font-semibold text-red-600">Barbería Estilo</span>
+            <p class="mt-2 text-sm text-slate-400">Reserva tu cita en línea</p>
         </header>
 
         <section class="tarjeta">
-            <div class="pointer-events-none absolute inset-2 rounded-lg border border-dashed border-amber-700/50"></div>
+            <div class="pointer-events-none absolute inset-2 rounded-lg border border-dashed border-red-900/60"></div>
             <div class="relative space-y-4">
                 <div>
-                    <h1 class="text-xl font-semibold text-amber-200">Iniciar sesión</h1>
-                    <p class="mt-1 text-sm text-stone-400">Entra con tu correo y contraseña</p>
+                    <h1 class="text-xl font-semibold text-slate-100">Iniciar sesión</h1>
+                    <p class="mt-1 text-sm text-slate-400">Entra con tu correo y contraseña</p>
                 </div>
 
                 <p id="mensajeError" role="alert" class="hidden rounded-lg border border-red-900/60 bg-red-950/40 p-2 text-sm text-red-300">
@@ -44,15 +44,15 @@
                         <div class="relative">
                             <input id="password" name="password" type="password" autocomplete="current-password" class="campo pr-20">
                             <button type="button" id="verPassword" aria-pressed="false"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-stone-400 hover:text-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500">Mostrar</button>
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 hover:text-white0 focus:outline-none focus:ring-2 focus:ring-red-500">Mostrar</button>
                         </div>
                     </div>
                     <button type="submit" class="btn w-full">Iniciar sesión</button>
                 </form>
 
-                <div class="space-y-1 text-sm text-stone-400">
-                    <p><a href="recuperar.html" class="text-amber-500 hover:text-amber-400">¿Olvidaste tu contraseña?</a></p>
-                    <p>¿Eres nuevo? <a href="registro.html" class="text-amber-500 hover:text-amber-400">Crea tu cuenta</a></p>
+                <div class="space-y-1 text-sm text-slate-400">
+                    <p><a href="recuperar.html" class="text-white0 hover:text-red-400">¿Olvidaste tu contraseña?</a></p>
+                    <p>¿Eres nuevo? <a href="registro.html" class="text-white0 hover:text-red-400">Crea tu cuenta</a></p>
                 </div>
             </div>
         </section>

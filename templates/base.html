@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Inicio{% endblock %} | Barbería Estilo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .etiqueta { @apply block text-xs text-neutral-400; }
+            .campo { @apply mt-1 w-full rounded-lg border border-white/10 bg-neutral-950 p-2 text-sm text-white placeholder-neutral-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500; }
+            .tarjeta { @apply rounded-2xl border border-white/10 bg-neutral-900 p-5; }
+            .btn { @apply rounded-lg bg-amber-500 px-5 py-2 font-semibold text-black hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-300; }
+            .opcion { @apply cursor-pointer rounded-xl border border-white/10 bg-neutral-950 p-3 text-left hover:border-amber-500/60; }
+            .opcion.activa { @apply border-amber-500 bg-amber-500/10; }
+            .acc { @apply rounded-md border px-2 py-1 text-xs; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-black text-neutral-100">
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% if mensajes %}
+    <div id="flash" class="fixed inset-x-0 top-4 z-50 mx-auto max-w-md space-y-2 px-4">
+        {% for cat, msg in mensajes %}
+        <p role="alert" class="rounded-lg border p-3 text-sm shadow-lg {% if cat == 'error' %}border-red-500/30 bg-red-950 text-red-300{% else %}border-emerald-500/30 bg-emerald-950 text-emerald-300{% endif %}">{{ msg }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% if session.get('usuario_id') %}
+    <header class="border-b border-white/10 bg-neutral-900">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 p-4">
+            <div class="flex items-center gap-3">
+                <div class="grid h-11 w-11 place-items-center rounded-xl bg-amber-500 text-2xl">💈</div>
+                <div>
+                    <p class="font-bold leading-tight">BARBERÍA <span class="font-serif italic text-amber-500">Estilo</span></p>
+                    <p class="text-xs text-neutral-400">Sistema de gestión de citas web</p>
+                </div>
+            </div>
+            <nav class="flex flex-wrap items-center gap-4 text-sm">
+                {% if session['rol'] == 'admin' %}
+                    <a href="/panel" class="{{ 'font-semibold text-amber-500' if request.path == '/panel' else 'text-neutral-300 hover:text-white' }}">Citas</a>
+                    <a href="/servicios" class="{{ 'font-semibold text-amber-500' if request.path == '/servicios' else 'text-neutral-300 hover:text-white' }}">Servicios</a>
+                    <a href="/usuarios" class="{{ 'font-semibold text-amber-500' if request.path == '/usuarios' else 'text-neutral-300 hover:text-white' }}">Usuarios</a>
+                {% else %}
+                    <a href="/agendar" class="{{ 'font-semibold text-amber-500' if request.path == '/agendar' else 'text-neutral-300 hover:text-white' }}">Agendar cita</a>
+                    <a href="/mis-citas" class="{{ 'font-semibold text-amber-500' if request.path == '/mis-citas' else 'text-neutral-300 hover:text-white' }}">Mis citas</a>
+                {% endif %}
+                <span class="text-neutral-500">|</span>
+                <span class="text-neutral-400">{{ session['nombre'] }}</span>
+                <a href="/logout" class="rounded-lg border border-white/10 px-3 py-1 text-neutral-300 hover:bg-white/5">Salir</a>
+            </nav>
+        </div>
+    </header>
+    {% endif %}
+
+    {% block contenido %}{% endblock %}
+
+    <script>setTimeout(() => document.getElementById('flash')?.remove(), 5000);</script>
+</body>
+</html>

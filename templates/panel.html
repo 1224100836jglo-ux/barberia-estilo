@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block titulo %}Citas{% endblock %}
+
+{% block contenido %}
+{% set colores = {
+    'Pendiente': 'border-amber-500/30 bg-amber-500/15 text-amber-400',
+    'Confirmada': 'border-blue-500/30 bg-blue-500/15 text-blue-400',
+    'Completada': 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400',
+    'Cancelada': 'border-red-500/30 bg-red-500/15 text-red-400'
+} %}
+{% macro boton(cita_id, estado, texto, clase, confirmar=false) %}
+<form method="post" action="{{ url_for('cambiar_estado', cita_id=cita_id) }}" class="inline"
+      {% if confirmar %}onsubmit="return confirm('¿Cancelar esta cita?')"{% endif %}>
+    <input type="hidden" name="estado" value="{{ estado }}">
+    <button class="acc {{ clase }}">{{ texto }}</button>
+</form>
+{% endmacro %}
+
+<main class="mx-auto max-w-6xl space-y-6 p-4 py-6">
+    <div class="grid gap-4 sm:grid-cols-3">
+        <div class="tarjeta flex items-center justify-between">
+            <div><p class="text-xs uppercase text-neutral-400">Citas para hoy</p><p class="mt-1 text-3xl font-bold">{{ st_hoy }}</p></div>
+            <span class="text-2xl">📅</span>
+        </div>
+        <div class="tarjeta flex items-center justify-between">
+            <div><p class="text-xs uppercase text-neutral-400">Citas pendientes</p><p class="mt-1 text-3xl font-bold">{{ st_pend }}</p><p class="text-xs text-neutral-500">Requieren confirmación</p></div>
+            <span class="text-2xl">🕒</span>
+        </div>
+        <div class="tarjeta flex items-center justify-between">
+            <div><p class="text-xs uppercase text-neutral-400">Ingresos de hoy</p><p class="mt-1 text-3xl font-bold text-emerald-400">${{ '%.0f'|format(st_ing) }} MXN</p><p class="text-xs text-neutral-500">Por servicios completados</p></div>
+            <span class="text-2xl">💵</span>
+        </div>
+    </div>
+
+    <section class="tarjeta space-y-4">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-semibold">✂️ Agenda general de reservaciones</h2>
+                <p class="text-xs text-neutral-400">Administra el estado de las citas</p>
+            </div>
+            <form method="get" class="flex flex-wrap items-center gap-2">
+                <input type="date" name="fecha" value="{{ fecha }}" aria-label="Filtrar por fecha" onchange="this.form.submit()" class="campo !mt-0 !w-auto">
+                <select name="barbero" aria-label="Filtrar por barbero" onchange="this.form.submit()" class="campo !mt-0 !w-auto">
+                    <option value="">Todos los barberos</option>
+                    {% for b in barberos %}
+                    <option value="{{ b.id }}" {% if barbero == b.id|string %}selected{% endif %}>{{ b.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <a href="/panel?fecha=" class="acc border-white/10 text-neutral-300 hover:bg-white/5">Ver todas</a>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[860px] text-left text-sm">
+                <thead class="bg-black text-xs uppercase text-neutral-400">
+                    <tr>
+                        <th class="p-3">Folio</th><th class="p-3">Cliente / Teléfono</th><th class="p-3">Servicio</th>
+                        <th class="p-3">Barbero</th><th class="p-3">Fecha y hora</th><th class="p-3">Estado</th><th class="p-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/10">
+                    {% for c in citas %}
+                    <tr>
+                        <td class="p-3 font-mono text-xs text-amber-500">APT-{{ c.id }}</td>
+                        <td class="p-3"><p class="font-semibold">{{ c.cliente }}</p><p class="text-xs text-neutral-500">{{ c.telefono }}</p></td>
+                        <td class="p-3"><p>{{ c.servicio }}</p><p class="text-xs text-amber-500">${{ '%.0f'|format(c.precio) }} MXN</p></td>
+                        <td class="p-3">{{ c.barbero }}</td>
+                        <td class="p-3"><p class="font-semibold">{{ c.fecha.strftime('%d/%m/%Y') }}</p><p class="text-xs text-neutral-500">{{ c.hora_txt }} hrs</p></td>
+                        <td class="p-3"><span class="rounded-full border px-3 py-1 text-xs {{ colores[c.estado] }}">{{ c.estado }}</span></td>
+                        <td class="space-x-1 whitespace-nowrap p-3 text-center">
+                            {% if c.estado == 'Pendiente' %}
+                                {{ boton(c.id, 'Confirmada', 'Confirmar', 'border-blue-500/30 text-blue-400 hover:bg-blue-500/10') }}
+                            {% endif %}
+                            {% if c.estado in ['Pendiente', 'Confirmada'] %}
+                                {{ boton(c.id, 'Completada', 'Atendido', 'border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10') }}
+                                {{ boton(c.id, 'Cancelada', '✕', 'border-red-500/30 text-red-400 hover:bg-red-500/10', true) }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="p-6 text-center text-neutral-500">No hay citas con esos filtros.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+{% endblock %}

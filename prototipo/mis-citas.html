@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis citas | Barbería Estilo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .etiqueta { @apply block text-sm text-slate-300; }
+            .campo { @apply mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 p-2 text-white placeholder-slate-500 focus:border-red-600 focus:outline-none focus:ring-1 focus:ring-red-600; }
+            .btn { @apply rounded-lg bg-red-800 px-5 py-2 font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500; }
+            .btn-sec { @apply rounded-lg border border-slate-700 px-3 py-1 text-sm text-slate-100 hover:bg-slate-800; }
+            .tarjeta { @apply relative rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-lg shadow-black/40; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100">
+    <nav class="border-b border-slate-700 bg-slate-900">
+        <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 p-4">
+            <span class="text-xl font-semibold text-red-600">Barbería Estilo</span>
+            <div class="flex flex-wrap gap-4 text-sm text-slate-300">
+                <a href="agendar.html" class="hover:text-white0">Agendar cita</a>
+                <a href="mis-citas.html" class="font-semibold text-red-400">Mis citas</a>
+                <a href="InicioDeSesion.html" class="text-white0 hover:text-red-400">Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="mx-auto max-w-3xl space-y-6 p-4 py-8">
+        <header class="flex items-center justify-between">
+            <h1 class="text-2xl font-semibold text-slate-100">Mis citas</h1>
+            <a href="agendar.html" class="btn">Nueva cita</a>
+        </header>
+
+        <section class="space-y-3">
+            <article class="tarjeta flex flex-wrap items-center justify-between gap-3 !p-4">
+                <div>
+                    <p class="font-semibold text-slate-300">Combo completo</p>
+                    <p class="text-sm text-slate-400">Vie 13 nov · 11:30 · Barbero 1</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="rounded-full bg-blue-900/50 px-3 py-1 text-xs text-slate-100">Confirmada</span>
+                    <button class="btn-sec">Cancelar</button>
+                </div>
+            </article>
+
+            <article class="tarjeta flex flex-wrap items-center justify-between gap-3 !p-4">
+                <div>
+                    <p class="font-semibold text-slate-300">Corte clásico</p>
+                    <p class="text-sm text-slate-400">Sáb 24 oct · 10:00 · Barbero 2</p>
+                </div>
+                <span class="rounded-full bg-green-900/40 px-3 py-1 text-xs text-green-300">Completada</span>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

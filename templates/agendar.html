@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block titulo %}Agendar cita{% endblock %}
+
+{% block contenido %}
+<main class="mx-auto max-w-6xl space-y-6 p-4 py-6">
+    <header>
+        <h1 class="text-2xl font-bold">Agenda tu estilo</h1>
+        <p class="text-sm text-neutral-400">Elige servicio, barbero, fecha y un horario disponible</p>
+    </header>
+
+    {% if not barberos %}
+    <div class="tarjeta text-sm text-neutral-300">Aún no hay barberos registrados. Pide al administrador que dé de alta uno.</div>
+    {% else %}
+    <div class="grid gap-6 lg:grid-cols-3">
+        <form method="post" class="tarjeta space-y-5 lg:col-span-2">
+            <h2 class="text-lg font-semibold">✂️ Completa tu reservación</h2>
+
+            <div>
+                <p class="etiqueta">Selecciona el servicio</p>
+                <div class="mt-1 grid gap-3 sm:grid-cols-2">
+                    {% for s in servicios %}
+                    <label class="cursor-pointer">
+                        <input type="radio" name="servicio" value="{{ s.id }}" class="peer sr-only" {% if loop.first %}checked{% endif %}
+                               data-nombre="{{ s.nombre }}" data-min="{{ s.duracion_min }}" data-precio="{{ '%.0f'|format(s.precio) }}">
+                        <div class="opcion peer-checked:border-amber-500 peer-checked:bg-amber-500/10 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500">
+                            <div class="flex items-start justify-between">
+                                <span class="text-sm font-semibold">{{ s.nombre }}</span>
+                                <span class="text-sm font-bold text-amber-500">${{ '%.0f'|format(s.precio) }}</span>
+                            </div>
+                            <p class="mt-1 text-xs text-neutral-500">⏱ {{ s.duracion_min }} mins</p>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <p class="etiqueta">Barbero preferido</p>
+                <div class="mt-1 grid gap-3 sm:grid-cols-3">
+                    {% for b in barberos %}
+                    <label class="cursor-pointer">
+                        <input type="radio" name="barbero" value="{{ b.id }}" class="peer sr-only" {% if loop.first %}checked{% endif %} data-nombre="{{ b.nombre }}">
+                        <div class="opcion text-center peer-checked:border-amber-500 peer-checked:bg-amber-500/10 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500">
+                            <span class="text-xl">💈</span>
+                            <p class="mt-1 text-xs font-semibold">{{ b.nombre }}</p>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="fecha" class="etiqueta">Fecha de cita</label>
+                    <input id="fecha" name="fecha" type="date" required min="{{ hoy }}" value="{{ hoy }}" class="campo">
+                </div>
+                <div>
+                    <label for="hora" class="etiqueta">Hora disponible</label>
+                    <select id="hora" name="hora" required class="campo"></select>
+                </div>
+            </div>
+
+            <button id="btnConfirmar" type="submit" class="btn w-full disabled:cursor-not-allowed disabled:opacity-50">Confirmar cita</button>
+        </form>
+
+        <aside class="space-y-4">
+            <div class="tarjeta space-y-3 text-sm">
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Resumen de tu reservación</h3>
+                <div class="flex justify-between gap-3"><span class="text-neutral-400">Servicio:</span><span id="resServicio" class="text-right font-semibold"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-neutral-400">Duración:</span><span id="resDuracion" class="font-semibold text-amber-500"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-neutral-400">Barbero:</span><span id="resBarbero" class="text-right font-semibold"></span></div>
+                <div class="flex justify-between gap-3"><span class="text-neutral-400">Fecha y hora:</span><span id="resFecha" class="font-semibold"></span></div>
+                <div class="flex items-center justify-between border-t border-white/10 pt-3">
+                    <span class="font-semibold">Total a pagar:</span>
+                    <span id="resTotal" class="text-xl font-bold text-amber-500"></span>
+                </div>
+            </div>
+            <div class="tarjeta text-sm">
+                <p class="font-semibold">🏅 Pago en el establecimiento</p>
+                <p class="mt-2 text-xs text-neutral-400">El cobro se realiza en efectivo o terminal física al finalizar el servicio.</p>
+            </div>
+        </aside>
+    </div>
+    {% endif %}
+</main>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+    const fecha = $('fecha'), hora = $('hora'), btn = $('btnConfirmar');
+    const sel = (name) => document.querySelector(`input[name="${name}"]:checked`);
+
+    function resumen() {
+        const s = sel('servicio'), b = sel('barbero');
+        if (!s || !b) return;
+        $('resServicio').textContent = s.dataset.nombre;
+        $('resDuracion').textContent = s.dataset.min + ' minutos';
+        $('resBarbero').textContent = b.dataset.nombre;
+        $('resFecha').textContent = `${fecha.value} @ ${hora.value || '—'}`;
+        $('resTotal').textContent = '$' + s.dataset.precio + ' MXN';
+        btn.textContent = 'Confirmar cita para $' + s.dataset.precio + ' MXN';
+    }
+
+    async function cargarHoras() {
+        const s = sel('servicio'), b = sel('barbero');
+        if (!s || !b || !fecha.value) return;
+        const previa = hora.value;
+        let datos = [];
+        try {
+            const r = await fetch(`/api/horas?servicio=${s.value}&barbero=${b.value}&fecha=${fecha.value}`);
+            datos = await r.json();
+        } catch (e) { datos = []; }
+
+        hora.innerHTML = '';
+        datos.forEach((d) => {
+            const o = document.createElement('option');
+            o.value = d.hora;
+            o.textContent = d.libre ? d.hora : `${d.hora} (ocupado)`;
+            o.disabled = !d.libre;
+            hora.appendChild(o);
+        });
+        const libres = datos.filter((d) => d.libre);
+        if (libres.length) {
+            hora.value = (libres.find((d) => d.hora === previa) || libres[0]).hora;
+        } else {
+            const o = document.createElement('option');
+            o.textContent = 'Sin horarios disponibles';
+            o.disabled = true; o.selected = true;
+            hora.appendChild(o);
+        }
+        btn.disabled = !libres.length;
+        resumen();
+    }
+
+    document.querySelectorAll('input[name="servicio"], input[name="barbero"]').forEach((i) => i.addEventListener('change', cargarHoras));
+    fecha.addEventListener('change', cargarHoras);
+    hora.addEventListener('change', resumen);
+    cargarHoras();
+</script>
+{% endblock %}

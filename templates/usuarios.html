@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block titulo %}Usuarios{% endblock %}
+
+{% block contenido %}
+<main class="mx-auto max-w-6xl space-y-6 p-4 py-6">
+    <header>
+        <h1 class="text-2xl font-bold">Usuarios y roles</h1>
+        <p class="text-sm text-neutral-400">Perfiles: Cliente y Administrador/Barbero. Los administradores aparecen como barberos al agendar.</p>
+    </header>
+
+    <section class="tarjeta !p-0 overflow-x-auto">
+        <table class="w-full min-w-[640px] text-left text-sm">
+            <thead class="bg-black text-xs uppercase text-neutral-400">
+                <tr><th class="p-3">Nombre</th><th class="p-3">Correo</th><th class="p-3">Teléfono</th><th class="p-3">Rol</th></tr>
+            </thead>
+            <tbody class="divide-y divide-white/10">
+                {% for u in usuarios %}
+                <tr>
+                    <td class="p-3 font-semibold">{{ u.nombre }}</td>
+                    <td class="p-3 text-neutral-300">{{ u.correo }}</td>
+                    <td class="p-3 text-neutral-300">{{ u.telefono }}</td>
+                    <td class="p-3">
+                        {% if u.id == session['usuario_id'] %}
+                            <span class="text-amber-500">Administrador/Barbero (tú)</span>
+                        {% else %}
+                        <form method="post" action="{{ url_for('cambiar_rol', uid=u.id) }}">
+                            <select name="rol" aria-label="Rol de {{ u.nombre }}" onchange="this.form.submit()" class="campo !mt-0 !w-auto !p-1">
+                                <option value="cliente" {% if u.rol == 'cliente' %}selected{% endif %}>Cliente</option>
+                                <option value="admin" {% if u.rol == 'admin' %}selected{% endif %}>Administrador/Barbero</option>
+                            </select>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</main>
+{% endblock %}

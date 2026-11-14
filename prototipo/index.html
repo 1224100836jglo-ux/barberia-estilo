@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barbería Estilo | Gestión de citas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .etiqueta { @apply block text-xs text-neutral-400; }
+            .campo { @apply mt-1 w-full rounded-lg border border-white/10 bg-neutral-950 p-2 text-sm text-white placeholder-neutral-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500; }
+            .tarjeta { @apply rounded-2xl border border-white/10 bg-neutral-900 p-5; }
+            .btn { @apply rounded-lg bg-amber-500 px-5 py-2 font-semibold text-black hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-300; }
+            .opcion { @apply cursor-pointer rounded-xl border border-white/10 bg-neutral-950 p-3 text-left hover:border-amber-500/60; }
+            .opcion.activa { @apply border-amber-500 bg-amber-500/10; }
+            .pestana { @apply border-b-2 border-transparent px-3 py-2 text-sm text-neutral-400 hover:text-white; }
+            .pestana.activa { @apply border-amber-500 text-amber-500; }
+            .vista-btn { @apply flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-neutral-300; }
+            .vista-btn.activa { @apply bg-amber-500 font-semibold text-black; }
+            .acc { @apply rounded-md border px-2 py-1 text-xs; }
+        }
+    </style>
+</head>
+<body class="bg-black text-neutral-100">
+
+    <!-- Encabezado -->
+    <header class="border-b border-white/10 bg-neutral-900">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 p-4">
+            <div class="flex items-center gap-3">
+                <div class="grid h-11 w-11 place-items-center rounded-xl bg-amber-500 text-2xl">💈</div>
+                <div>
+                    <p class="font-bold leading-tight">BARBERÍA <span class="font-serif italic text-amber-500">Estilo</span></p>
+                    <p class="text-xs text-neutral-400">Sistema de gestión de citas web</p>
+                </div>
+            </div>
+            <div class="flex gap-1 rounded-xl border border-white/10 bg-black p-1">
+                <button id="btnCliente" class="vista-btn activa">👤 Vista Cliente</button>
+                <button id="btnAdmin" class="vista-btn">✂️ Vista Barbero / Admin</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl space-y-6 p-4 py-6">
+
+        <!-- ================= VISTA CLIENTE ================= -->
+        <section id="vistaCliente" class="space-y-6">
+
+            <div class="tarjeta">
+                <span class="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs text-amber-400">Reservación en línea 24/7</span>
+                <h1 class="mt-3 text-3xl font-bold">Agenda tu estilo con los mejores barberos</h1>
+                <p class="mt-2 max-w-xl text-sm text-neutral-400">Elige tu servicio, selecciona a tu barbero de confianza y reserva en tiempo real sin esperas ni llamadas.</p>
+            </div>
+
+            <div class="flex gap-2 border-b border-white/10">
+                <button id="pestAgendar" class="pestana activa">📅 Agendar nueva cita</button>
+                <button id="pestMis" class="pestana">🕒 Mis citas (<span id="contMis">0</span>)</button>
+            </div>
+
+            <!-- Agendar -->
+            <div id="panelAgendar" class="grid gap-6 lg:grid-cols-3">
+                <form id="formCita" class="tarjeta space-y-5 lg:col-span-2" novalidate>
+                    <h2 class="text-lg font-semibold">✂️ Completa tu reservación</h2>
+
+                    <p id="msg" role="alert" class="hidden rounded-lg border p-2 text-sm"></p>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="nombre" class="etiqueta">Nombre completo *</label>
+                            <input id="nombre" type="text" placeholder="Ej. Juan Pérez" class="campo">
+                        </div>
+                        <div>
+                            <label for="telefono" class="etiqueta">Teléfono de contacto *</label>
+                            <input id="telefono" type="tel" placeholder="Ej. 418 123 4567" class="campo">
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="etiqueta">Selecciona el servicio</p>
+                        <div id="listaServicios" class="mt-1 grid gap-3 sm:grid-cols-2"></div>
+                    </div>
+
+                    <div>
+                        <p class="etiqueta">Barbero preferido</p>
+                        <div id="listaBarberos" class="mt-1 grid gap-3 sm:grid-cols-3"></div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="fecha" class="etiqueta">Fecha de cita</label>
+                            <input id="fecha" type="date" class="campo">
+                        </div>
+                        <div>
+                            <label for="hora" class="etiqueta">Hora disponible</label>
+                            <select id="hora" class="campo"></select>
+                        </div>
+                    </div>
+
+                    <button id="btnConfirmar" type="submit" class="btn w-full"></button>
+                </form>
+
+                <aside class="space-y-4">
+                    <div class="tarjeta space-y-3 text-sm">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Resumen de tu reservación</h3>
+                        <div class="flex justify-between gap-3"><span class="text-neutral-400">Servicio:</span><span id="resServicio" class="text-right font-semibold"></span></div>
+                        <div class="flex justify-between gap-3"><span class="text-neutral-400">Duración:</span><span id="resDuracion" class="font-semibold text-amber-500"></span></div>
+                        <div class="flex justify-between gap-3"><span class="text-neutral-400">Barbero:</span><span id="resBarbero" class="text-right font-semibold"></span></div>
+                        <div class="flex justify-between gap-3"><span class="text-neutral-400">Fecha y hora:</span><span id="resFecha" class="font-semibold"></span></div>
+                        <div class="flex items-center justify-between border-t border-white/10 pt-3">
+                            <span class="font-semibold">Total a pagar:</span>
+                            <span id="resTotal" class="text-xl font-bold text-amber-500"></span>
+                        </div>
+                    </div>
+                    <div class="tarjeta text-sm">
+                        <p class="font-semibold">🏅 Garantía de servicio</p>
+                        <p class="mt-2 text-xs text-neutral-400">El pago se realiza en efectivo o terminal física al finalizar el servicio.</p>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Mis citas -->
+            <div id="panelMis" class="hidden space-y-3"></div>
+        </section>
+
+        <!-- ================= VISTA ADMIN ================= -->
+        <section id="vistaAdmin" class="hidden space-y-6">
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div class="tarjeta flex items-center justify-between">
+                    <div><p class="text-xs uppercase text-neutral-400">Citas para hoy</p><p id="stHoy" class="mt-1 text-3xl font-bold">0</p></div>
+                    <span class="text-2xl">📅</span>
+                </div>
+                <div class="tarjeta flex items-center justify-between">
+                    <div><p class="text-xs uppercase text-neutral-400">Citas pendientes</p><p id="stPend" class="mt-1 text-3xl font-bold">0</p></div>
+                    <span class="text-2xl">🕒</span>
+                </div>
+                <div class="tarjeta flex items-center justify-between">
+                    <div><p class="text-xs uppercase text-neutral-400">Ingresos estimados</p><p id="stIng" class="mt-1 text-3xl font-bold text-emerald-400">$0 MXN</p></div>
+                    <span class="text-2xl">💵</span>
+                </div>
+            </div>
+
+            <div class="tarjeta space-y-4">
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-semibold">✂️ Agenda general de reservaciones</h2>
+                        <p class="text-xs text-neutral-400">Administra el estado de las citas</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="fFecha" type="date" aria-label="Filtrar por fecha" class="campo !mt-0">
+                        <select id="fBarbero" aria-label="Filtrar por barbero" class="campo !mt-0"></select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[820px] text-left text-sm">
+                        <thead class="bg-black text-xs uppercase text-neutral-400">
+                            <tr>
+                                <th class="p-3">Folio</th><th class="p-3">Cliente / Teléfono</th><th class="p-3">Servicio</th>
+                                <th class="p-3">Barbero</th><th class="p-3">Fecha y hora</th><th class="p-3">Estado</th><th class="p-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCitas" class="divide-y divide-white/10"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ---------- Datos (en memoria; se reinician al recargar) ----------
+        const servicios = [
+            { id: 1, nombre: 'Corte clásico & peinado', precio: 180, min: 40, icono: '✂️' },
+            { id: 2, nombre: 'Arreglo de barba & toalla caliente', precio: 120, min: 30, icono: '🪒' },
+            { id: 3, nombre: 'Combo imperial (corte + barba)', precio: 270, min: 60, icono: '👑' },
+            { id: 4, nombre: 'Tinte & camuflaje de canas', precio: 220, min: 45, icono: '🎨' }
+        ];
+        const barberos = [
+            { id: 1, nombre: 'Carlos Mendoza', info: 'Especialista en degradados', icono: '💈' },
+            { id: 2, nombre: 'Mateo Hernández', info: 'Experto en navaja y barba', icono: '🧔' },
+            { id: 3, nombre: 'Luis Gómez', info: 'Cortes clásicos y estilistas', icono: '✂️' }
+        ];
+        const horas = [];
+        for (let h = 10; h <= 18; h++) {
+            const hh = String(h).padStart(2, '0');
+            horas.push(hh + ':00', hh + ':30');
+        }
+
+        const $ = (id) => document.getElementById(id);
+        const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const hoy = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+        const serv = (id) => servicios.find((s) => s.id === id);
+        const barb = (id) => barberos.find((b) => b.id === id);
+
+        let citas = [
+            { folio: 'APT-101', cliente: 'Juan Pablo Martínez', tel: '418 123 4567', servicio: 3, barbero: 1, fecha: hoy, hora: '11:00', estado: 'Pendiente' },
+            { folio: 'APT-102', cliente: 'Roberto Gómez', tel: '418 987 6543', servicio: 1, barbero: 2, fecha: hoy, hora: '14:30', estado: 'Confirmada' },
+            { folio: 'APT-103', cliente: 'Alejandro Torres', tel: '418 555 8899', servicio: 2, barbero: 3, fecha: hoy, hora: '16:00', estado: 'Completada' }
+        ];
+        let contador = 104, selServ = 1, selBarb = 1;
+
+        const badge = {
+            Pendiente: 'border-amber-500/30 bg-amber-500/15 text-amber-400',
+            Confirmada: 'border-blue-500/30 bg-blue-500/15 text-blue-400',
+            Completada: 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400',
+            Cancelada: 'border-red-500/30 bg-red-500/15 text-red-400'
+        };
+
+        // ---------- Vista Cliente ----------
+        function renderServicios() {
+            $('listaServicios').innerHTML = servicios.map((s) => `
+                <button type="button" data-id="${s.id}" class="opcion ${s.id === selServ ? 'activa' : ''}">
+                    <div class="flex items-start justify-between"><span class="text-xl">${s.icono}</span><span class="text-sm font-bold text-amber-500">$${s.precio} MXN</span></div>
+                    <p class="mt-2 text-sm font-semibold">${s.nombre}</p>
+                    <p class="text-xs text-neutral-500">⏱ ${s.min} mins</p>
+                </button>`).join('');
+        }
+
+        function renderBarberos() {
+            $('listaBarberos').innerHTML = barberos.map((b) => `
+                <button type="button" data-id="${b.id}" class="opcion text-center ${b.id === selBarb ? 'activa' : ''}">
+                    <span class="text-xl">${b.icono}</span>
+                    <p class="mt-1 text-xs font-semibold">${b.nombre}</p>
+                    <p class="text-[10px] text-neutral-500">${b.info}</p>
+                </button>`).join('');
+        }
+
+        function ocupadas() {
+            return citas.filter((c) => c.fecha === $('fecha').value && c.barbero === selBarb && c.estado !== 'Cancelada').map((c) => c.hora);
+        }
+
+        function renderHoras() {
+            const ocu = ocupadas(), actual = $('hora').value;
+            $('hora').innerHTML = horas.map((h) => `<option value="${h}" ${ocu.includes(h) ? 'disabled' : ''}>${h}${ocu.includes(h) ? ' (ocupado)' : ''}</option>`).join('');
+            const libre = horas.find((h) => !ocu.includes(h));
+            $('hora').value = actual && !ocu.includes(actual) ? actual : (libre || '');
+        }
+
+        function renderResumen() {
+            const s = serv(selServ), b = barb(selBarb);
+            $('resServicio').textContent = s.nombre;
+            $('resDuracion').textContent = s.min + ' minutos';
+            $('resBarbero').textContent = b.nombre;
+            $('resFecha').textContent = `${$('fecha').value} @ ${$('hora').value || '—'}`;
+            $('resTotal').textContent = `$${s.precio} MXN`;
+            $('btnConfirmar').textContent = `Confirmar cita para $${s.precio} MXN`;
+        }
+
+        function mostrarMsg(texto, error) {
+            const m = $('msg');
+            m.textContent = texto;
+            m.className = 'rounded-lg border p-2 text-sm ' + (error ? 'border-red-500/30 bg-red-500/10 text-red-300' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300');
+            setTimeout(() => m.classList.add('hidden'), 4000);
+        }
+
+        function renderMisCitas() {
+            $('contMis').textContent = citas.length;
+            // En el sistema real se filtrará por el usuario con sesión iniciada
+            $('panelMis').innerHTML = citas.map((c) => `
+                <article class="tarjeta flex flex-wrap items-center justify-between gap-3 !p-4">
+                    <div>
+                        <p class="font-semibold">${serv(c.servicio).nombre} <span class="text-xs text-neutral-500">· ${c.folio}</span></p>
+                        <p class="text-sm text-neutral-400">${c.fecha} · ${c.hora} · ${barb(c.barbero).nombre}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="rounded-full border px-3 py-1 text-xs ${badge[c.estado]}">${c.estado}</span>
+                        ${['Pendiente', 'Confirmada'].includes(c.estado) ? `<button data-folio="${c.folio}" class="acc border-red-500/30 text-red-400 hover:bg-red-500/10">Cancelar</button>` : ''}
+                    </div>
+                </article>`).join('') || '<p class="text-sm text-neutral-400">Aún no tienes citas.</p>';
+        }
+
+        $('listaServicios').addEventListener('click', (e) => {
+            const b = e.target.closest('button'); if (!b) return;
+            selServ = Number(b.dataset.id); renderServicios(); renderResumen();
+        });
+        $('listaBarberos').addEventListener('click', (e) => {
+            const b = e.target.closest('button'); if (!b) return;
+            selBarb = Number(b.dataset.id); renderBarberos(); renderHoras(); renderResumen();
+        });
+        $('fecha').addEventListener('change', () => { renderHoras(); renderResumen(); });
+        $('hora').addEventListener('change', renderResumen);
+
+        $('formCita').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nombre = $('nombre').value.trim(), tel = $('telefono').value.trim();
+            const fecha = $('fecha').value, hora = $('hora').value;
+            if (!nombre || !tel || !fecha || !hora) return mostrarMsg('Completa nombre, teléfono, fecha y hora.', true);
+            if (fecha < hoy) return mostrarMsg('La fecha no puede ser anterior a hoy.', true);
+            if (ocupadas().includes(hora)) return mostrarMsg('Ese horario ya está ocupado. Elige otro.', true);
+
+            const folio = 'APT-' + contador++;
+            citas.push({ folio, cliente: nombre, tel, servicio: selServ, barbero: selBarb, fecha, hora, estado: 'Pendiente' });
+            $('nombre').value = ''; $('telefono').value = '';
+            mostrarMsg(`Cita ${folio} agendada. Queda pendiente de confirmación.`, false);
+            renderTodo();
+        });
+
+        // ---------- Vista Admin ----------
+        function renderAdmin() {
+            const ff = $('fFecha').value, fb = $('fBarbero').value;
+            const lista = citas.filter((c) => (!ff || c.fecha === ff) && (!fb || c.barbero === Number(fb)));
+
+            $('stHoy').textContent = citas.filter((c) => c.fecha === hoy && c.estado !== 'Cancelada').length;
+            $('stPend').textContent = citas.filter((c) => c.estado === 'Pendiente').length;
+            $('stIng').textContent = '$' + citas.filter((c) => c.estado === 'Completada').reduce((t, c) => t + serv(c.servicio).precio, 0) + ' MXN';
+
+            $('tablaCitas').innerHTML = lista.map((c) => `
+                <tr>
+                    <td class="p-3 font-mono text-xs text-amber-500">${c.folio}</td>
+                    <td class="p-3"><p class="font-semibold">${esc(c.cliente)}</p><p class="text-xs text-neutral-500">${esc(c.tel)}</p></td>
+                    <td class="p-3"><p>${serv(c.servicio).nombre}</p><p class="text-xs text-amber-500">$${serv(c.servicio).precio} MXN</p></td>
+                    <td class="p-3">${barb(c.barbero).nombre}</td>
+                    <td class="p-3"><p class="font-semibold">${c.fecha}</p><p class="text-xs text-neutral-500">${c.hora} hrs</p></td>
+                    <td class="p-3"><span class="rounded-full border px-3 py-1 text-xs ${badge[c.estado]}">${c.estado}</span></td>
+                    <td class="space-x-1 p-3 text-center">
+                        ${c.estado === 'Pendiente' ? `<button data-folio="${c.folio}" data-estado="Confirmada" class="acc border-blue-500/30 text-blue-400 hover:bg-blue-500/10">Confirmar</button>` : ''}
+                        ${['Pendiente', 'Confirmada'].includes(c.estado) ? `<button data-folio="${c.folio}" data-estado="Completada" class="acc border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">Atendido</button>
+                        <button data-folio="${c.folio}" data-estado="Cancelada" class="acc border-red-500/30 text-red-400 hover:bg-red-500/10">✕</button>` : ''}
+                    </td>
+                </tr>`).join('') || '<tr><td colspan="7" class="p-6 text-center text-neutral-500">No hay citas con esos filtros.</td></tr>';
+        }
+
+        function cambiarEstado(folio, estado) {
+            const c = citas.find((x) => x.folio === folio);
+            if (c) { c.estado = estado; renderTodo(); }
+        }
+
+        $('tablaCitas').addEventListener('click', (e) => {
+            const b = e.target.closest('button'); if (b) cambiarEstado(b.dataset.folio, b.dataset.estado);
+        });
+        $('panelMis').addEventListener('click', (e) => {
+            const b = e.target.closest('button'); if (b) cambiarEstado(b.dataset.folio, 'Cancelada');
+        });
+        $('fFecha').addEventListener('change', renderAdmin);
+        $('fBarbero').addEventListener('change', renderAdmin);
+
+        // ---------- Navegación entre vistas y pestañas ----------
+        function cambiarVista(admin) {
+            $('vistaCliente').classList.toggle('hidden', admin);
+            $('vistaAdmin').classList.toggle('hidden', !admin);
+            $('btnCliente').classList.toggle('activa', !admin);
+            $('btnAdmin').classList.toggle('activa', admin);
+            renderTodo();
+        }
+        function cambiarPestana(mis) {
+            $('panelAgendar').classList.toggle('hidden', mis);
+            $('panelMis').classList.toggle('hidden', !mis);
+            $('pestAgendar').classList.toggle('activa', !mis);
+            $('pestMis').classList.toggle('activa', mis);
+        }
+        $('btnCliente').addEventListener('click', () => cambiarVista(false));
+        $('btnAdmin').addEventListener('click', () => cambiarVista(true));
+        $('pestAgendar').addEventListener('click', () => cambiarPestana(false));
+        $('pestMis').addEventListener('click', () => cambiarPestana(true));
+
+        function renderTodo() { renderHoras(); renderResumen(); renderMisCitas(); renderAdmin(); }
+
+        // ---------- Inicio ----------
+        $('fecha').value = hoy;
+        $('fecha').min = hoy;
+        $('fBarbero').innerHTML = '<option value="">Todos los barberos</option>' + barberos.map((b) => `<option value="${b.id}">${b.nombre}</option>`).join('');
+        renderServicios(); renderBarberos(); renderTodo();
+    </script>
+</body>
+</html>
