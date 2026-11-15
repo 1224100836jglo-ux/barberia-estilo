@@ -1,0 +1,5 @@
+DB_HOST = 'localhost'
+DB_USER = 'root'
+DB_PASSWORD = 'TU_PASSWORD_DE_MYSQL'
+DB_NAME = 'barberia'
+SECRET_KEY = 'cambia-esto-por-una-cadena-larga-y-aleatoria'
