@@ -11,6 +11,7 @@
 {% macro boton(cita_id, estado, texto, clase, confirmar=false) %}
 <form method="post" action="{{ url_for('cambiar_estado', cita_id=cita_id) }}" class="inline"
       {% if confirmar %}onsubmit="return confirm('¿Cancelar esta cita?')"{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="estado" value="{{ estado }}">
     <button class="acc {{ clase }}">{{ texto }}</button>
 </form>

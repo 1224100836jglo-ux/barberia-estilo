@@ -1,15 +1,26 @@
-from datetime import date, datetime
+import hashlib
+import secrets
+from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 
 import pymysql
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+from flask_wtf.csrf import CSRFError, CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import config
 
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+csrf = CSRFProtect(app)
+
+
+@app.errorhandler(CSRFError)
+def error_csrf(e):
+    flash('El formulario expiró o no es válido. Intenta de nuevo.', 'error')
+    return redirect(request.referrer or url_for('login'))
 
 
 def db():
@@ -141,8 +152,65 @@ def registro():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+# ------------------------- RECUPERAR CONTRASEÑA -------------------------
+VIGENCIA_TOKEN_MIN = 30
 
 
+def hash_token(token):
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+@app.route('/recuperar', methods=['GET', 'POST'])
+def recuperar():
+    if request.method == 'POST':
+        correo = request.form.get('correo', '').strip().lower()
+        with db() as con, con.cursor() as cur:
+            cur.execute('SELECT id FROM usuarios WHERE correo = %s', (correo,))
+            u = cur.fetchone()
+            if u:
+                token = secrets.token_urlsafe(32)
+                cur.execute('DELETE FROM reset_tokens WHERE usuario_id = %s', (u['id'],))
+                cur.execute(
+                    'INSERT INTO reset_tokens (usuario_id, token_hash, expira) VALUES (%s, %s, %s)',
+                    (u['id'], hash_token(token), datetime.now() + timedelta(minutes=VIGENCIA_TOKEN_MIN)),
+                )
+                con.commit()
+                enlace = url_for('restablecer', token=token, _external=True)
+                # Simula el envío del correo: el enlace se imprime en la terminal del servidor
+                print(f'\n[RECUPERACIÓN] Enlace para {correo} (vence en {VIGENCIA_TOKEN_MIN} min):\n{enlace}\n', flush=True)
+        # Misma respuesta exista o no el correo, para no revelar qué cuentas existen
+        flash('Si el correo está registrado, se generó un enlace de recuperación.', 'ok')
+        return redirect(url_for('login'))
+    return render_template('recuperar.html')
+
+
+@app.route('/restablecer/<token>', methods=['GET', 'POST'])
+def restablecer(token):
+    with db() as con, con.cursor() as cur:
+        cur.execute(
+            'SELECT usuario_id FROM reset_tokens WHERE token_hash = %s AND expira > %s',
+            (hash_token(token), datetime.now()),
+        )
+        t = cur.fetchone()
+        if not t:
+            flash('El enlace no es válido o ya venció. Solicita uno nuevo.', 'error')
+            return redirect(url_for('recuperar'))
+
+        if request.method == 'POST':
+            p1 = request.form.get('pass', '')
+            p2 = request.form.get('pass2', '')
+            if len(p1) < 8:
+                flash('La contraseña debe tener al menos 8 caracteres.', 'error')
+            elif p1 != p2:
+                flash('Las contraseñas no coinciden.', 'error')
+            else:
+                cur.execute('UPDATE usuarios SET password_hash = %s WHERE id = %s',
+                            (generate_password_hash(p1), t['usuario_id']))
+                cur.execute('DELETE FROM reset_tokens WHERE usuario_id = %s', (t['usuario_id'],))
+                con.commit()
+                flash('Contraseña actualizada. Ya puedes iniciar sesión.', 'ok')
+                return redirect(url_for('login'))
+    return render_template('restablecer.html')
 # ------------------------- CLIENTE -------------------------
 @app.route('/agendar', methods=['GET', 'POST'])
 @requiere_rol('cliente')

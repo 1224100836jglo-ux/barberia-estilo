@@ -24,6 +24,7 @@
                             <span class="text-amber-500">Administrador/Barbero (tú)</span>
                         {% else %}
                         <form method="post" action="{{ url_for('cambiar_rol', uid=u.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <select name="rol" aria-label="Rol de {{ u.nombre }}" onchange="this.form.submit()" class="campo !mt-0 !w-auto !p-1">
                                 <option value="cliente" {% if u.rol == 'cliente' %}selected{% endif %}>Cliente</option>
                                 <option value="admin" {% if u.rol == 'admin' %}selected{% endif %}>Administrador/Barbero</option>

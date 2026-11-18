@@ -25,6 +25,7 @@
                 <span class="rounded-full border px-3 py-1 text-xs {{ colores[c.estado] }}">{{ c.estado }}</span>
                 {% if c.estado in ['Pendiente', 'Confirmada'] %}
                 <form method="post" action="{{ url_for('cancelar_cita', cita_id=c.id) }}" onsubmit="return confirm('¿Cancelar esta cita?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button class="acc border-red-500/30 text-red-400 hover:bg-red-500/10">Cancelar</button>
                 </form>
                 {% endif %}

@@ -13,6 +13,7 @@
         <p class="mt-1 text-sm text-neutral-400">Para guardar tu historial de citas</p>
 
         <form method="post" class="mt-4 space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
                 <label for="nombre" class="etiqueta">Nombre completo</label>
                 <input id="nombre" name="nombre" type="text" required autocomplete="name" value="{{ request.form.get('nombre', '') }}" class="campo">

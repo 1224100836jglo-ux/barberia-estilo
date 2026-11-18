@@ -14,6 +14,7 @@
         <p class="mt-1 text-sm text-neutral-400">Entra con tu correo y contraseña</p>
 
         <form method="post" class="mt-4 space-y-4">
+             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
                 <label for="correo" class="etiqueta">Correo</label>
                 <input id="correo" name="correo" type="email" required autocomplete="username"
@@ -29,9 +30,10 @@
             <button type="submit" class="btn w-full">Iniciar sesión</button>
         </form>
 
-        <p class="mt-4 text-sm text-neutral-400">¿Eres nuevo? <a href="/registro" class="text-amber-500 hover:text-amber-400">Crea tu cuenta</a></p>
-    </section>
-</main>
+        <div class="mt-4 space-y-1 text-sm text-neutral-400">
+    <p><a href="/recuperar" class="text-amber-500 hover:text-amber-400">¿Olvidaste tu contraseña?</a></p>
+    <p>¿Eres nuevo? <a href="/registro" class="text-amber-500 hover:text-amber-400">Crea tu cuenta</a></p>
+</div>
 
 <script>
     const campo = document.getElementById('password');

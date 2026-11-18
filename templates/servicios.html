@@ -11,6 +11,7 @@
     <section class="tarjeta">
         <h2 class="text-lg font-semibold">{{ 'Editar servicio' if editar else 'Nuevo servicio' }}</h2>
         <form method="post" action="{{ url_for('guardar_servicio') }}" class="mt-3 grid gap-4 sm:grid-cols-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% if editar %}<input type="hidden" name="id" value="{{ editar.id }}">{% endif %}
             <div class="sm:col-span-2">
                 <label for="nombre" class="etiqueta">Nombre</label>
@@ -52,6 +53,7 @@
                     <td class="space-x-2 whitespace-nowrap p-3">
                         <a href="/servicios?editar={{ s.id }}" class="acc border-white/10 text-neutral-300 hover:bg-white/5">Editar</a>
                         <form method="post" action="{{ url_for('alternar_servicio', sid=s.id) }}" class="inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button class="acc border-white/10 text-neutral-300 hover:bg-white/5">{{ 'Desactivar' if s.activo else 'Activar' }}</button>
                         </form>
                     </td>

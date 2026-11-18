@@ -38,3 +38,12 @@ INSERT INTO servicios (nombre, precio, duracion_min) VALUES
     ('Arreglo de barba & toalla caliente', 120, 30),
     ('Combo imperial (corte + barba)', 270, 60),
     ('Tinte & camuflaje de canas', 220, 45);
+
+    CREATE TABLE IF NOT EXISTS reset_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expira DATETIME NOT NULL,
+    creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);

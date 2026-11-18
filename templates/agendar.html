@@ -13,6 +13,7 @@
     {% else %}
     <div class="grid gap-6 lg:grid-cols-3">
         <form method="post" class="tarjeta space-y-5 lg:col-span-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <h2 class="text-lg font-semibold">✂️ Completa tu reservación</h2>
 
             <div>
